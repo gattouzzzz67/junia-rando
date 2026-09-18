@@ -47,10 +47,18 @@
     display:grid;
     grid-template-columns:1fr;
     gap:16px;
-  }
+ }
   .marquee{
     text-align:center;
     padding:10px 4px 4px;
+  }
+  .marquee img.logo{
+    width:120px;
+    max-width:45vw;
+    height:auto;
+    display:block;
+    margin:0 auto 6px;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,.4));
   }
   .marquee h1{
     font-family:'Press Start 2P', monospace;
@@ -58,7 +66,7 @@
     letter-spacing:1px;
     margin:0;
     color:var(--amber);
-    text-shadow:0 3px 0 #7a4d16;
+    text-shadow:0 3px 0 var(--slate-dark);
   }
   .marquee p{
     margin:8px 0 0;
@@ -75,10 +83,10 @@
   }
   .screen-shell{
     position:relative;
-    background:#08201c;
+    background:#10161F;
     border-radius:16px;
     padding:14px;
-    border:3px solid #0a2622;
+    border:3px solid #0B0F16;
     box-shadow:inset 0 0 40px rgba(0,0,0,.55);
   }
   .screen-shell::before{
@@ -233,7 +241,6 @@
     box-shadow:0 3px 0 var(--amber-dim);
     font-size:16px;
     padding:0;
-  }
   .dpad .up{grid-column:2; grid-row:1;}
   .dpad .left{grid-column:1; grid-row:2;}
   .dpad .down{grid-column:2; grid-row:2;}
