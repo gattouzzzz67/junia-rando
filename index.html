@@ -3,28 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Serpent d'Arcade</title>
+<title>Méritez-vous votre place chez la junia rando family? </title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐍</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --teal-dark:#0F332E;
-    --teal-mid:#164C44;
-    --cream:#F2E8D5;
-    --cream-dim:#DCCFB2;
-    --amber:#E8A33D;
-    --amber-dim:#B87F2C;
-    --raspberry:#C1443C;
-    --ink:#152420;
+    --teal-dark:#1B2432;
+    --teal-mid:#2B3A52;
+    --cream:#F9FBE4;
+    --cream-dim:#C7C6B8;
+    --amber:#F9FBE4;
+    --amber-dim:#A5A5A5;
+    --raspberry:#B5651D;
+    --ink:#1B2432;
+    --slate:#A5A5A5;
+    --slate-dark:#71757B;
   }
-  *{box-sizing:border-box;}
+ *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     min-height:100vh;
     background:
-      radial-gradient(circle at 50% -10%, #1c5148 0%, var(--teal-dark) 55%);
+      radial-gradient(circle at 50% -10%, #33415A 0%, var(--teal-dark) 55%);
     font-family:'Space Grotesk', system-ui, -apple-system, sans-serif;
     color:var(--cream);
     display:flex;
@@ -243,8 +245,8 @@
 <body>
 <div class="arcade">
   <div class="marquee">
-    <h1>🐍 SERPENT D'ARCADE</h1>
-    <p>Entre ton prénom, mange les pommes, évite les murs — et grimpe au classement.</p>
+    <h1>méritez-vous votre place chez la junia rando family</h1>
+    <p>met ton insta en prénom, les 3 meilleurs seront récompensés.</p>
   </div>
 
   <div class="layout">
@@ -258,7 +260,7 @@
 
       <!-- Name entry overlay -->
       <div class="overlay" id="nameOverlay">
-        <h2>INSÉRER UN PRÉNOM</h2>
+        <h2>INSÉRER UN blaze (insta)</h2>
         <input type="text" id="nameInput" maxlength="20" placeholder="Ton prénom" autocomplete="off">
         <button id="startBtn">JOUER</button>
         <p class="hint">Flèches / WASD pour te déplacer. Sur mobile, utilise les boutons ci-dessous.</p>
@@ -266,7 +268,7 @@
 
       <!-- Game over overlay -->
       <div class="overlay hidden" id="gameOverOverlay">
-        <h2>PERDU !</h2>
+        <h2> ouais pas mal !</h2>
         <div class="score-big" id="finalScore">0</div>
         <p id="gameOverMsg">Score enregistré au classement.</p>
         <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
