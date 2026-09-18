@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Serpent d'Arcade</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐍</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-dark:#0F332E;
+    --teal-mid:#164C44;
+    --cream:#F2E8D5;
+    --cream-dim:#DCCFB2;
+    --amber:#E8A33D;
+    --amber-dim:#B87F2C;
+    --raspberry:#C1443C;
+    --ink:#152420;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% -10%, #1c5148 0%, var(--teal-dark) 55%);
+    font-family:'Space Grotesk', system-ui, -apple-system, sans-serif;
+    color:var(--cream);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 14px;
+  }
+  .arcade{
+    width:100%;
+    max-width:920px;
+    background:linear-gradient(180deg, #2a6b60 0%, #1c5148 100%);
+    border-radius:28px;
+    padding:20px 20px 26px;
+    box-shadow:
+      0 0 0 6px #0c2925,
+      0 24px 60px -20px rgba(0,0,0,.6),
+      inset 0 2px 0 rgba(255,255,255,.08);
+    display:grid;
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+  .marquee{
+    text-align:center;
+    padding:10px 4px 4px;
+  }
+  .marquee h1{
+    font-family:'Press Start 2P', monospace;
+    font-size:clamp(16px, 4vw, 26px);
+    letter-spacing:1px;
+    margin:0;
+    color:var(--amber);
+    text-shadow:0 3px 0 #7a4d16;
+  }
+  .marquee p{
+    margin:8px 0 0;
+    font-size:13px;
+    color:var(--cream-dim);
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+  @media (min-width: 760px){
+    .layout{grid-template-columns: minmax(0,1fr) 240px;}
+  }
+  .screen-shell{
+    position:relative;
+    background:#08201c;
+    border-radius:16px;
+    padding:14px;
+    border:3px solid #0a2622;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.55);
+  }
+  .screen-shell::before{
+    content:"";
+    position:absolute;
+    inset:14px;
+    pointer-events:none;
+    border-radius:8px;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.03) 0px,
+      rgba(255,255,255,0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:1/1;
+    background:#0d2b25;
+    border-radius:8px;
+    image-rendering:pixelated;
+  }
+  .hud{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    color:var(--amber);
+    margin-bottom:10px;
+    letter-spacing:.5px;
+  }
+  .hud span.label{color:var(--cream-dim); font-size:9px; display:block; margin-bottom:4px;}
+  .panel{
+    background:var(--cream);
+    color:var(--ink);
+    border-radius:16px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    box-shadow:inset 0 0 0 3px rgba(0,0,0,.06);
+  }
+  .panel h2{
+    font-family:'Press Start 2P', monospace;
+    font-size:12px;
+    margin:0 0 4px;
+    color:var(--teal-dark);
+  }
+  .leaderboard-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    max-height:280px;
+    overflow-y:auto;
+  }
+  .leaderboard-list li{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:14px;
+    padding:6px 8px;
+    border-radius:8px;
+    background:rgba(22,76,68,.06);
+  }
+  .leaderboard-list li.me{
+    background:var(--amber);
+    color:var(--teal-dark);
+    font-weight:700;
+  }
+  .leaderboard-list .rank{color:var(--amber-dim); font-weight:700; width:22px; flex-shrink:0;}
+  .leaderboard-list li.me .rank{color:var(--teal-dark);}
+  .leaderboard-list .name{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .leaderboard-empty, .leaderboard-status{
+    font-size:13px;
+    color:#6b6153;
+    padding:6px 2px;
+  }
+  .overlay{
+    position:absolute;
+    inset:0;
+    border-radius:8px;
+    background:rgba(8,32,28,.92);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:14px;
+    padding:20px;
+  }
+  .overlay.hidden{display:none;}
+  .overlay h2{
+    font-family:'Press Start 2P', monospace;
+    font-size:clamp(14px,4vw,20px);
+    color:var(--amber);
+    margin:0;
+  }
+  .overlay p{margin:0; color:var(--cream-dim); font-size:14px;}
+  input[type="text"]{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:16px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:2px solid var(--amber-dim);
+    background:var(--cream);
+    color:var(--ink);
+    width:min(240px, 80vw);
+    text-align:center;
+  }
+  input[type="text"]:focus{outline:2px solid var(--amber); outline-offset:1px;}
+  button{
+    font-family:'Press Start 2P', monospace;
+    font-size:12px;
+    padding:12px 20px;
+    border-radius:10px;
+    border:none;
+    background:var(--amber);
+    color:var(--ink);
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--amber-dim);
+    transition:transform .05s ease;
+  }
+  button:active{transform:translateY(3px); box-shadow:0 1px 0 var(--amber-dim);}
+  button.secondary{
+    background:transparent;
+    color:var(--amber);
+    box-shadow:none;
+    border:2px solid var(--amber-dim);
+  }
+  .score-big{
+    font-family:'Press Start 2P', monospace;
+    font-size:28px;
+    color:var(--cream);
+  }
+  .hint{font-size:12px; color:var(--cream-dim); text-align:center; margin-top:8px;}
+  .dpad{
+    display:grid;
+    grid-template-columns:repeat(3,52px);
+    grid-template-rows:repeat(2,44px);
+    gap:6px;
+    justify-content:center;
+    margin-top:12px;
+  }
+  .dpad button{
+    box-shadow:0 3px 0 var(--amber-dim);
+    font-size:16px;
+    padding:0;
+  }
+  .dpad .up{grid-column:2; grid-row:1;}
+  .dpad .left{grid-column:1; grid-row:2;}
+  .dpad .down{grid-column:2; grid-row:2;}
+  .dpad .right{grid-column:3; grid-row:2;}
+  @media (min-width:760px){ .dpad{display:none;} }
+  .visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+</style>
+</head>
+<body>
+<div class="arcade">
+  <div class="marquee">
+    <h1>🐍 SERPENT D'ARCADE</h1>
+    <p>Entre ton prénom, mange les pommes, évite les murs — et grimpe au classement.</p>
+  </div>
+
+  <div class="layout">
+    <div class="screen-shell">
+      <div class="hud">
+        <div><span class="label">JOUEUR</span><span id="hudName">—</span></div>
+        <div><span class="label">SCORE</span><span id="hudScore">0</span></div>
+        <div><span class="label">RECORD PERSO</span><span id="hudBest">0</span></div>
+      </div>
+      <canvas id="game" width="400" height="400" role="img" aria-label="Plateau du jeu Serpent"></canvas>
+
+      <!-- Name entry overlay -->
+      <div class="overlay" id="nameOverlay">
+        <h2>INSÉRER UN PRÉNOM</h2>
+        <input type="text" id="nameInput" maxlength="20" placeholder="Ton prénom" autocomplete="off">
+        <button id="startBtn">JOUER</button>
+        <p class="hint">Flèches / WASD pour te déplacer. Sur mobile, utilise les boutons ci-dessous.</p>
+      </div>
+
+      <!-- Game over overlay -->
+      <div class="overlay hidden" id="gameOverOverlay">
+        <h2>PERDU !</h2>
+        <div class="score-big" id="finalScore">0</div>
+        <p id="gameOverMsg">Score enregistré au classement.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+          <button id="retryBtn">REJOUER</button>
+          <button class="secondary" id="changeNameBtn">CHANGER DE PRÉNOM</button>
+        </div>
+      </div>
+
+      <div class="dpad" aria-hidden="false">
+        <button class="up" data-dir="up" aria-label="Haut">▲</button>
+        <button class="left" data-dir="left" aria-label="Gauche">◀</button>
+        <button class="down" data-dir="down" aria-label="Bas">▼</button>
+        <button class="right" data-dir="right" aria-label="Droite">▶</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🏆 CLASSEMENT</h2>
+      <div id="leaderboardStatus" class="leaderboard-status">Connexion au classement…</div>
+      <ol class="leaderboard-list" id="leaderboardList"></ol>
+    </div>
+  </div>
+</div>
+
+<!--
+  ==========================================================================
+  CONFIGURATION FIREBASE — à remplir avant de déployer (voir instructions).
+  ==========================================================================
+-->
+<script>
+  const firebaseConfig = {
+    apiKey: "REMPLACE_MOI",
+    authDomain: "REMPLACE_MOI.firebaseapp.com",
+    projectId: "REMPLACE_MOI",
+    storageBucket: "REMPLACE_MOI.appspot.com",
+    messagingSenderId: "REMPLACE_MOI",
+    appId: "REMPLACE_MOI"
+  };
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Firebase setup ----------
+  let db = null;
+  let firebaseReady = false;
+  try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "REMPLACE_MOI") {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      firebaseReady = true;
+    }
+  } catch (e) {
+    console.error("Firebase init failed:", e);
+  }
+
+  const leaderboardStatusEl = document.getElementById('leaderboardStatus');
+  const leaderboardListEl = document.getElementById('leaderboardList');
+
+  function sanitizeKey(name){
+    return name.trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 30) || 'joueur';
+  }
+
+  let currentPlayerKey = null;
+
+  function renderLeaderboard(docs){
+    leaderboardListEl.innerHTML = '';
+    if (docs.length === 0){
+      leaderboardStatusEl.textContent = 'Aucun score pour le moment — sois le premier !';
+      leaderboardStatusEl.style.display = 'block';
+      return;
+    }
+    leaderboardStatusEl.style.display = 'none';
+    docs.forEach((doc, i) => {
+      const data = doc.data();
+      const li = document.createElement('li');
+      if (doc.id === currentPlayerKey) li.classList.add('me');
+      li.innerHTML = `<span class="rank">${i+1}</span><span class="name">${escapeHtml(data.displayName || doc.id)}</span><span class="score">${data.bestScore ?? 0}</span>`;
+      leaderboardListEl.appendChild(li);
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  if (firebaseReady){
+    db.collection('leaderboard').orderBy('bestScore', 'desc').limit(10)
+      .onSnapshot(
+        snap => renderLeaderboard(snap.docs),
+        err => {
+          console.error(err);
+          leaderboardStatusEl.textContent = "Classement indisponible pour l'instant.";
+        }
+      );
+  } else {
+    leaderboardStatusEl.textContent = "Classement non configuré (voir les instructions de déploiement).";
+  }
+
+  async function submitScore(displayName, score){
+    if (!firebaseReady) return;
+    const key = sanitizeKey(displayName);
+    currentPlayerKey = key;
+    const ref = db.collection('leaderboard').doc(key);
+    try {
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(ref);
+        const prevBest = doc.exists ? (doc.data().bestScore || 0) : 0;
+        if (score > prevBest){
+          tx.set(ref, {
+            displayName: displayName.trim().slice(0, 20),
+            bestScore: score,
+            updatedAt: Date.now()
+          });
+        }
+      });
+    } catch (e){
+      console.error('Score submission failed:', e);
+    }
+  }
+
+  // ---------- Game ----------
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const GRID = 20;
+  const CELLS = canvas.width / GRID; // 20x20
+
+  const nameOverlay = document.getElementById('nameOverlay');
+  const gameOverOverlay = document.getElementById('gameOverOverlay');
+  const nameInput = document.getElementById('nameInput');
+  const startBtn = document.getElementById('startBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const changeNameBtn = document.getElementById('changeNameBtn');
+  const hudName = document.getElementById('hudName');
+  const hudScore = document.getElementById('hudScore');
+  const hudBest = document.getElementById('hudBest');
+  const finalScoreEl = document.getElementById('finalScore');
+  const gameOverMsg = document.getElementById('gameOverMsg');
+
+  let playerName = localStorage.getItem('snake_playerName') || '';
+  if (playerName) nameInput.value = playerName;
+
+  let snake, dir, nextDir, food, score, best, loopId, speedMs, running;
+
+  function personalBestKey(){
+    return 'snake_best_' + sanitizeKey(playerName);
+  }
+
+  function resetGame(){
+    snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+    dir = 'right';
+    nextDir = 'right';
+    score = 0;
+    speedMs = 140;
+    placeFood();
+    hudScore.textContent = '0';
+    best = parseInt(localStorage.getItem(personalBestKey()) || '0', 10);
+    hudBest.textContent = best;
+    running = true;
+  }
+
+  function placeFood(){
+    let valid = false;
+    while(!valid){
+      food = { x: Math.floor(Math.random()*CELLS), y: Math.floor(Math.random()*CELLS) };
+      valid = !snake.some(s => s.x === food.x && s.y === food.y);
+    }
+  }
+
+  function draw(){
+    ctx.fillStyle = '#0d2b25';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // food
+    ctx.fillStyle = '#C1443C';
+    roundRect(food.x*GRID+2, food.y*GRID+2, GRID-4, GRID-4, 5);
+
+    // snake
+    snake.forEach((seg, i) => {
+      ctx.fillStyle = i === 0 ? '#E8A33D' : '#F2E8D5';
+      roundRect(seg.x*GRID+1, seg.y*GRID+1, GRID-2, GRID-2, 4);
+    });
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function tick(){
+    dir = nextDir;
+    const head = { ...snake[0] };
+    if (dir === 'up') head.y -= 1;
+    if (dir === 'down') head.y += 1;
+    if (dir === 'left') head.x -= 1;
+    if (dir === 'right') head.x += 1;
+
+    const hitsWall = head.x < 0 || head.y < 0 || head.x >= CELLS || head.y >= CELLS;
+    const hitsSelf = snake.some(s => s.x === head.x && s.y === head.y);
+
+    if (hitsWall || hitsSelf){
+      endGame();
+      return;
+    }
+
+    snake.unshift(head);
+
+    if (head.x === food.x && head.y === food.y){
+      score += 1;
+      hudScore.textContent = score;
+      if (score % 5 === 0 && speedMs > 60) speedMs -= 8;
+      placeFood();
+      restartLoop();
+    } else {
+      snake.pop();
+    }
+
+    draw();
+  }
+
+  function restartLoop(){
+    clearInterval(loopId);
+    loopId = setInterval(tick, speedMs);
+  }
+
+  function endGame(){
+    running = false;
+    clearInterval(loopId);
+    if (score > best){
+      best = score;
+      localStorage.setItem(personalBestKey(), String(best));
+      hudBest.textContent = best;
+    }
+    finalScoreEl.textContent = score;
+    gameOverMsg.textContent = firebaseReady
+      ? 'Score envoyé au classement mondial.'
+      : "Classement non configuré — score gardé en local seulement.";
+    gameOverOverlay.classList.remove('hidden');
+    submitScore(playerName, score);
+  }
+
+  function startGame(){
+    hudName.textContent = playerName;
+    nameOverlay.classList.add('hidden');
+    gameOverOverlay.classList.add('hidden');
+    resetGame();
+    draw();
+    restartLoop();
+  }
+
+  startBtn.addEventListener('click', () => {
+    const val = nameInput.value.trim();
+    if (!val) { nameInput.focus(); return; }
+    playerName = val;
+    localStorage.setItem('snake_playerName', playerName);
+    startGame();
+  });
+
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') startBtn.click();
+  });
+
+  retryBtn.addEventListener('click', () => {
+    gameOverOverlay.classList.add('hidden');
+    startGame();
+  });
+
+  changeNameBtn.addEventListener('click', () => {
+    gameOverOverlay.classList.add('hidden');
+    nameOverlay.classList.remove('hidden');
+    nameInput.focus();
+    nameInput.select();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!running) return;
+    const key = e.key.toLowerCase();
+    if ((key === 'arrowup' || key === 'w') && dir !== 'down') nextDir = 'up';
+    else if ((key === 'arrowdown' || key === 's') && dir !== 'up') nextDir = 'down';
+    else if ((key === 'arrowleft' || key === 'a') && dir !== 'right') nextDir = 'left';
+    else if ((key === 'arrowright' || key === 'd') && dir !== 'left') nextDir = 'right';
+    else return;
+    e.preventDefault();
+  }, { passive:false });
+
+  document.querySelectorAll('.dpad button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!running) return;
+      const d = btn.dataset.dir;
+      if (d === 'up' && dir !== 'down') nextDir = 'up';
+      if (d === 'down' && dir !== 'up') nextDir = 'down';
+      if (d === 'left' && dir !== 'right') nextDir = 'left';
+      if (d === 'right' && dir !== 'left') nextDir = 'right';
+    });
+  });
+
+  // Simple swipe support on canvas for mobile
+  let touchStart = null;
+  canvas.addEventListener('touchstart', (e) => {
+    const t = e.changedTouches[0];
+    touchStart = { x: t.clientX, y: t.clientY };
+  }, { passive:true });
+  canvas.addEventListener('touchend', (e) => {
+    if (!touchStart || !running) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+    if (Math.abs(dx) > Math.abs(dy)){
+      if (dx > 0 && dir !== 'left') nextDir = 'right';
+      else if (dx < 0 && dir !== 'right') nextDir = 'left';
+    } else {
+      if (dy > 0 && dir !== 'up') nextDir = 'down';
+      else if (dy < 0 && dir !== 'down') nextDir = 'up';
+    }
+    touchStart = null;
+  }, { passive:true });
+
+  // initial paint so canvas isn't blank behind overlay
+  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  food = {x:15,y:10};
+  draw();
+})();
+</script>
+</body>
+</html>
